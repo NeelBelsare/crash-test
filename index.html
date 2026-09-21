@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Data Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+
+    <div class="bg-white p-8 rounded-lg shadow-md w-96">
+        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Enter Details</h2>
+        <form id="dataForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Name</label>
+                <input type="text" id="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Surname</label>
+                <input type="text" id="surname" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Country</label>
+                <input type="text" id="country" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition">
+                Submit Data
+            </button>
+        </form>
+        <p id="statusMessage" class="mt-4 text-center text-sm hidden"></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBuXa4zrE3se-MvH0Xj9ShntsZaVXE2z-w",
+            authDomain: "flashchat-73339.firebaseapp.com",
+            databaseURL: "https://flashchat-73339-default-rtdb.firebaseio.com",
+            projectId: "flashchat-73339",
+            storageBucket: "flashchat-73339.firebasestorage.app",
+            messagingSenderId: "635574440154",
+            appId: "1:635574440154:web:49de085d4652de4fd215e3",
+            measurementId: "G-6BG6Y3T98J"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        document.getElementById('dataForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const status = document.getElementById('statusMessage');
+            
+            btn.disabled = true;
+            btn.innerText = 'Saving...';
+            status.classList.add('hidden');
+
+            try {
+                // Generate a new unique key and save the data to the 'users' path
+                const usersRef = ref(db, 'users');
+                const newUserRef = push(usersRef);
+                await set(newUserRef, {
+                    name: document.getElementById('name').value,
+                    surname: document.getElementById('surname').value,
+                    country: document.getElementById('country').value,
+                    timestamp: new Date().toISOString()
+                });
+
+                e.target.reset();
+                status.textContent = 'Data saved successfully!';
+                status.className = 'mt-4 text-center text-sm text-green-600 block';
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                status.textContent = 'Error saving data. Check console.';
+                status.className = 'mt-4 text-center text-sm text-red-600 block';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Submit Data';
+            }
+        });
+    </script>
+</body>
+</html>
